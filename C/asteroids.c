@@ -107,6 +107,7 @@ int *asteroidCollision(int *asteroids, int asteroidsSize, int *returnSize) {
 	int retSize = asteroidsSize;
 	int *retArray;
 	Asteroid *head;
+	Asteroid *original_head;
 	Asteroid *cur;
 	Asteroid *tail;
 
@@ -118,6 +119,8 @@ int *asteroidCollision(int *asteroids, int asteroidsSize, int *returnSize) {
 
 	//Build a linked list of asteroids. Easier to pop and run through once,
 	//I think lol
+	head = (Asteroid *) malloc(sizeof(Asteroid) * asteroidsSize);
+	original_head = head;
 	for (i = 0; i < asteroidsSize; i++) {
 		if (i == 0) {
 			head = (Asteroid *) malloc(sizeof(Asteroid));
@@ -166,7 +169,6 @@ int *asteroidCollision(int *asteroids, int asteroidsSize, int *returnSize) {
 			cur = cur->next;
 			if (cur)
 				cur->prev = tmp->prev;
-			free(tmp);
 			retSize--;
 			//may leave cur on NULL, an end point
 		} else if (cur->size < cur->next->size) {
@@ -174,7 +176,6 @@ int *asteroidCollision(int *asteroids, int asteroidsSize, int *returnSize) {
 			if (cur->prev == NULL) {
 				//remove first entry
 				head = cur->next;
-				free(cur);
 				cur = head;
 				cur->prev = NULL;
 			} else {
@@ -185,7 +186,6 @@ int *asteroidCollision(int *asteroids, int asteroidsSize, int *returnSize) {
 				if (cur->next)
 					cur->next->prev = cur->prev;
 				cur = cur->next;
-				free(tmp);
 				//may leave cur on NULL, an end point
 			}
 			retSize--;
@@ -227,9 +227,6 @@ int *asteroidCollision(int *asteroids, int asteroidsSize, int *returnSize) {
 				cur = head;
 			}
 
-			if (tmp->next)
-				free(tmp->next);
-			free(tmp);
 			retSize -= 2;
 		}
 
@@ -247,21 +244,13 @@ int *asteroidCollision(int *asteroids, int asteroidsSize, int *returnSize) {
 		tail = cur; //cur will land on null. tail one before
 		cur = cur->next;
 	}
-	if (retSize > 0)
-		destroy_list(tail);
+
+	free(original_head);
 
 	*returnSize = retSize;
 	return retArray;
 }
 
-void destroy_list(Asteroid *list) {
-	while (list->prev != NULL) {
-		list = list->prev;
-		if (list->next)
-			free(list->next);
-	}
-	free(list);
-}
 
 bool unit_test(int *testData, int testSize, int *expectedResult, int expectedSize) {
 	int retSize = 0;
