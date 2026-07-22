@@ -30,12 +30,13 @@ CFLAGS += $(C_RELEASE_FLAGS)
 BUILD_MODE := release
 endif
 
-.PHONY: help debug clean list build
+.PHONY: help debug clean list all build
 
 help:
 	@printf '%s\n' 'Usage:'
 	@printf '%s\n' '  make <problem-id>        Build a problem by ID, e.g. make 0001'
 	@printf '%s\n' '  make <problem-id> debug  Build with debug flags to bin/debug, e.g. make 0001 debug'
+	@printf '%s\n' '  make all                 Build every known problem'
 	@printf '%s\n' '  make list                List known C problem IDs'
 	@printf '%s\n' '  make clean               Remove built binaries'
 
@@ -51,6 +52,17 @@ list:
 	if [ -d '$(C_DIR)' ]; then \
 		find '$(C_DIR)' -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.c' | sort | sed 's#^$(C_DIR)/##; s#_.*##'; \
 	fi
+
+all:
+	@set -eu; \
+	ids=$$(find '$(C_DIR)' -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.c' | sort | sed 's#^$(C_DIR)/##; s#_.*##'); \
+	if [ -z "$$ids" ]; then \
+		printf '%s\n' 'No problems found.'; \
+		exit 0; \
+	fi; \
+	for id in $$ids; do \
+		$(MAKE) --no-print-directory build PROBLEM_ID="$$id" DEBUG='$(DEBUG)'; \
+	done
 
 build:
 	@if [ -z '$(PROBLEM_ID)' ]; then \
